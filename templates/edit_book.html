@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Edit {{ book.title }}</h1>
+
+  {% if book.cover_url %}
+    <img src="{{ book.cover_url }}" alt="{{ book.title }}" width="250">
+  {% endif %}
+
+  <form method="POST">
+    {{ form.hidden_tag() }}
+
+    <p>
+      {{ form.cover_url.label }}<br>
+      {{ form.cover_url(size=40) }}
+    </p>
+
+    <p>
+      {{ form.description.label }}<br>
+      {{ form.description(rows=4, cols=40) }}
+    </p>
+
+    <p>
+      {{ form.available() }} {{ form.available.label }}
+    </p>
+
+    <button type="submit">Update Book Info</button>
+  </form>
+{% endblock %}

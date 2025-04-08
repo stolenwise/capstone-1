@@ -1,0 +1,30 @@
+<!-- templates/base.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %} Authentication {% endblock %}</title>
+</head>
+<body>
+    <div class="container">
+        <nav>
+            <a href="/">Home</a> | <a href="/login">Login</a> | <a href="/logout">Logout</a>
+        </nav>
+        {% block content %}
+        {% endblock %}
+    </div>
+      <!-- Buttons for navigation -->
+      <div>
+        <a href="{{ url_for('register') }}">
+            <button>Go to Register</button>
+        </a>
+        <a href="{{ url_for('login') }}">
+            <button>Go to Login</button>
+        </a>
+        <a href="{{ url_for('secret') }}">
+            <button>Go to Secret</button>
+        </a>
+    </div>
+</body>
+</html>

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <h1>Add a New Book</h1>
+
+  <form id="form" method="POST" action="{{ url_for('add_book') }}">
+    {{ form.hidden_tag() }}
+
+    <div>
+      <label for="title">Book Title</label><br>
+      {{ form.title(size=100) }}
+      {% for error in form.title.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label for="genre">Genre</label><br>
+      {{ form.genre(size=30) }}
+      {% for error in form.genre.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label for="cover_url">Cover URL</label><br>
+      {{ form.cover_url(size=40) }}
+      {% for error in form.cover_url.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label for="page_count">Page Count</label><br>
+      {{ form.age() }}
+      {% for error in form.page_count.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label for="description">Description</label><br>
+      {{ form.description(rows=4, cols=40) }}
+      {% for error in form.description.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <button type="submit">Add Book</button>
+    </div>
+  </form>
+
+  <p><a href="{{ url_for('books_list') }}">Back to All Books</a></p>
+{% endblock %}
