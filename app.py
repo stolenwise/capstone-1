@@ -1,4 +1,5 @@
-from flask import Flask, render_template, redirect, session, request, flash, url_for
+from flask import Flask, render_template, redirect, session, request, flash, url_for, jsonify
+import requests
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -36,6 +37,18 @@ def create_app():
 
 app = create_app() 
 
+# API CALL
+
+def fetch_books_from_api():
+    api_url = "https://gutendex.com/books"
+    response = requests.get(api_url)
+    print(f"Response Status: {response.status_code}")
+    print(f"Response Data: {response.text}")
+    if response.status_code == 200:
+        return response.json()
+    else:
+        return None
+
 # HOME PAGE?
 
 @app.route('/')
@@ -60,8 +73,6 @@ def process_register():
             username=form.username.data,
             password=hashed_password,  # Save the hashed password
             email=form.email.data,
-            # first_name=form.first_name.data,
-            # last_name=form.last_name.data,
         )
 
         db.session.add(new_user)
@@ -168,7 +179,43 @@ def delete_user(username):
 
 @app.route('/books')
 def books_list():
-    books = Book.query.all()  # Get all books from the database
+    books_data = fetch_books_from_api()
+    if books_data and 'results' in books_data:
+        return render_template('books_list.html', books=books_data['results'])
+    else:
+        print("No books data available or API request failed.")
+        return render_template('books_list.html', books=[])  # Return an empty list if no data
+
+
+# @app.route('/books')
+# def books_list():
+#     """Populate Books from from Local Database and Fetch Books from API."""
+#     books = Book.query.all()  # Get all books from the local database
+#     book_data = fetch_books_from_api()
+#       # Check if the data was fetched successfully
+#     if not book_data:
+#         return "No books found or failed to fetch from API.", 500
+
+#     # Now we can loop through book_data
+#     for book in book_data:
+#         print(book)  # For debugging, remove after testing
+
+
+    # if not books:
+    #     books_data = fetch_books_from_api()
+
+    # if books_data:
+    #     for book_data in book_data:
+    #         new_book = Book(
+    #             title=book_data['title'],
+    #             author=book_data['author'],
+    #             desccription=book_data['description'],
+    #             cover_url=book_data['cover_url']
+    #         )
+    #         db.session.add(new_book) # Add each new book to the session
+    #         db.session.commit # Commit to save each book
+
+        # books = Book.query.all() # Fetch the books again after adding them to the database
     return render_template('books_list.html', books=books)
 
 

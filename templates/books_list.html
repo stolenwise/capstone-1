@@ -1,29 +1,20 @@
 {% extends "base.html" %}
 
 {% block content %}
+    <h2>Books</h2>
 
-<h2>Books</h2>
-
-<div class="books-container">
-  {% for pet in pets %}
-    <div class="book-card">
-      <img src="{{ cover.photo_url }}" alt="Photo of {{ book.title }}">
-      <div class="title">{{ book.title }}</div>
-      <div class="book-status">is available!</div>
-
-      <!-- Edit button-->
-      <a href="{{ url_for('edit_book', book_id=book.id) }}" class="edit-btn">Edit</a>
-
-
-      <!-- Delete form -->
-      <form action="{{ url_for('delete_book', book_id=book.id) }}" method="POST"
-            onsubmit="return confirm('Are you sure you want to delete {{ book.title }}?');">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-        <button type="submit" class="delete-btn">Delete</button>
-      </form>
-    </div>
-  {% else %}
-    <p>No books found.</p>
-  {% endfor %}
-</div>
+    {% if books %}
+        <ul>
+            {% for book in books %}
+                <li>
+                    <h3>{{ book.title }}</h3>
+                    <p>Author: {{ book.authors[0].name if book.authors else "Unknown" }}</p>
+                    <p>{{ book.summaries[0] if book.summaries else "No summary available" }}</p>
+                    <a href="{{ book.formats['text/html'] }}" target="_blank">Read online</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <p>No books available.</p>
+    {% endif %}
 {% endblock %}
