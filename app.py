@@ -42,12 +42,48 @@ app = create_app()
 def fetch_books_from_api():
     api_url = "https://gutendex.com/books"
     response = requests.get(api_url)
-    print(f"Response Status: {response.status_code}")
-    print(f"Response Data: {response.text}")
+    print(response.json())
     if response.status_code == 200:
         return response.json()
     else:
         return None
+
+books = fetch_books_from_api()
+
+def get_ebook_links(books):
+    ebook_links = []
+
+    for book in books['results']:
+        print(f"Book data: {book}")
+
+        if 'formats' in book:
+            print(f"Formats available: {book['formats']}")    
+
+
+            if 'application/epub+zip' in book['formats']:
+        #Extract the EPUB download link
+                epub_link = book['formats']['application/epub+zip']
+
+                print(f"Found EPUB Link: {epub_link}")
+                
+
+
+                ebook_links.append({
+                'title': book['title'],
+                'author': book['authors'][0]['name'] if 'authors' in book and len(book['authors']) > 0 else 'Unknown',
+                'epub_link': epub_link
+                })
+            else:
+                print("No epub links found.")
+        else:
+            print("No format keys found in the book data.")
+
+    return ebook_links
+
+ebook_links = get_ebook_links(books)
+
+for ebook in ebook_links:
+    print(f"Title: {ebook['title']} | EPUB Link: {ebook['epub_link']}")
 
 # HOME PAGE?
 
@@ -179,12 +215,21 @@ def delete_user(username):
 
 @app.route('/books')
 def books_list():
-    books_data = fetch_books_from_api()
+    books_data = fetch_books_from_api()  # Fetch the books data from the API
+    ebooks_data = get_ebook_links(books_data)
+
+    print("Books Data:", books_data)  # Check the entire books data
+    print("Ebook Links:", ebooks_data)
+    
     if books_data and 'results' in books_data:
-        return render_template('books_list.html', books=books_data['results'])
+        # Render the template with both books and ebooks_data (EPUB links)
+        return render_template('books_list.html', books=books_data['results'], ebook_links=ebooks_data)
     else:
         print("No books data available or API request failed.")
-        return render_template('books_list.html', books=[])  # Return an empty list if no data
+        
+        # Render the template with empty data if the request failed
+        return render_template('books_list.html', books=[], ebook_links=[])
+
 
 
 # @app.route('/books')

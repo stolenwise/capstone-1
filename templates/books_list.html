@@ -10,7 +10,20 @@
                     <h3>{{ book.title }}</h3>
                     <p>Author: {{ book.authors[0].name if book.authors else "Unknown" }}</p>
                     <p>{{ book.summaries[0] if book.summaries else "No summary available" }}</p>
-                    <a href="{{ book.formats['text/html'] }}" target="_blank">Read online</a>
+                    
+                    {% set found_epub = false %}
+                    {% for ebook in ebook_links %}
+                        {% if ebook.title == book.title %}
+                            {% if ebook.epub_link %}
+                                <a href="{{ ebook.epub_link }}" target="_blank">Download EPUB</a>
+                                {% set found_epub = true %}
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if not found_epub %}
+                        <a href="{{ book.formats['text/html'] }}" target="_blank">Read online</a>
+                    {% endif %}
                 </li>
             {% endfor %}
         </ul>

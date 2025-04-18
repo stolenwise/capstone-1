@@ -1,0 +1,78 @@
+
+body {
+  font-family: "Libre Baskerville", Georgia, serif;
+  line-height: 1.6;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  background: #FDFDFD;
+}
+
+.books-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 2rem;
+  margin: 2rem 0;
+}
+
+.book-card {
+  background: white;
+  border: 1px solid #E5E5E5;
+  padding: 1.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: transform 0.2s ease;
+}
+
+.book-card:hover {
+  transform: translateY(-5px);
+}
+
+.book-title {
+  font-size: 1.2rem;
+  margin: 0 0 0.5rem 0;
+  color: #2B2B2B;
+}
+
+.book-author {
+  font-style: italic;
+  color: #666;
+  margin-bottom: 1rem;
+}
+
+.book-description {
+  font-size: 0.9rem;
+  color: #444;
+  margin-bottom: 1rem;
+}
+
+.read-more {
+  display: inline-block;
+  padding: 0.5rem 1rem;
+  background: #313131;
+  color: white;
+  text-decoration: none;
+  border-radius: 3px;
+  font-size: 0.9rem;
+}
+
+.read-more:hover {
+  background: #444;
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 3rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #E5E5E5;
+}
+
+.header h1 {
+  font-size: 2.5rem;
+  color: #2B2B2B;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: #666;
+  font-style: italic;
+}
