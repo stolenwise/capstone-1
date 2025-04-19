@@ -65,7 +65,7 @@ def get_ebook_links(books):
                 epub_link = book['formats']['application/epub+zip']
 
                 print(f"Found EPUB Link: {epub_link}")
-                
+
 
 
                 ebook_links.append({
@@ -266,6 +266,7 @@ def books_list():
 
 @app.route('/add', methods=['GET', 'POST'])
 def add_book():
+    print("Adding a new book")
     form = AddBookForm()
     if form.validate_on_submit():
         title = form.title.data
@@ -274,7 +275,7 @@ def add_book():
         page_count = form.page_count.data
         description = form.description.data
         
-        # Create a new pet instance
+        # Create a new book instance
         new_book = Book(title=title, author=author, cover_url=cover_url, page_count=page_count, description=description)
 
         existing_book = Book.query.filter_by(title=title, author=author).first()

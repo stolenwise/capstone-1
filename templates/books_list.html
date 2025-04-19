@@ -21,6 +21,7 @@
                         {% endif %}
                     {% endfor %}
                     
+                    <a>|</a>
                     {% if not found_epub %}
                         <a href="{{ book.formats['text/html'] }}" target="_blank">Read online</a>
                     {% endif %}
@@ -30,4 +31,6 @@
     {% else %}
         <p>No books available.</p>
     {% endif %}
+    <br>
+<br>
 {% endblock %}
