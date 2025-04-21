@@ -5,7 +5,7 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  background: #FDFDFD;
+  background: #c3edee;
 }
 
 .books-container {
@@ -75,4 +75,27 @@ body {
 .header p {
   color: #666;
   font-style: italic;
+}
+
+button.delete-book-button {
+  background-color: #3c75d7 !important; /* Red color */
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 3px;
+  cursor: pointer;
+}
+
+button.delete-book-button:hover {
+  background-color: #c82333 !important; /* Darker red on hover */
+}
+
+nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  margin: 1rem 0;
+
+  background-color: #f8f9fa;
 }

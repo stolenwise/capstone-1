@@ -238,6 +238,7 @@ def delete_user(username):
 # BOOKS ROUTES
 
 @app.route('/books')
+@login_required 
 def books_list():
     books_data = fetch_books_from_api()  # Fetch the books data from the API
     uploaded_books = Book.query.all()  # Get all books from the local database (uploaded books)
@@ -260,11 +261,11 @@ def books_list():
 @app.route('/books')
 @login_required 
 def books():
-    
     books_data = Book.query.all()
     return render_template('books_list.html', books=books_data)
 
 @app.route('/add', methods=['GET', 'POST'])
+@login_required 
 def add_book():
     """Add a new book to the Book list."""
     if current_user.is_authenticated:
@@ -354,11 +355,13 @@ def add_book():
     return render_template('add_book.html', form=form)
 
 @app.route('/uploads/<filename>')
+@login_required 
 def upload_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
 
 
 @app.route('/books/<int:book_id>', methods=['GET', 'POST'])
+@login_required 
 def edit_book(book_id):
     book = Book.query.get_or_404(book_id)
     form = EditBookForm(obj=book) #pre fill with the book data
@@ -376,6 +379,7 @@ def edit_book(book_id):
 
 
 @app.route('/delete_book/<int:book_id>', methods=['POST'])
+@login_required 
 def delete_book(book_id):
     book = Book.query.get_or_404(book_id)
     try:

@@ -7,27 +7,32 @@
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
-    <title>{% block title %} Authentication {% endblock %}</title>
+    <title>{% block title %} {% endblock %}</title>
 </head>
 <body>
     <div class="container">
         <nav>
-            <a href="/">Home</a> | <a href="/login">Login</a> | <a href="/logout">Logout | <a href="/books">Books | <a href="/add">Add A Book</a>
-        </nav>
+           <span class="float-right"> <a href="/book">Home</a> | <a href="/register">Sign Up</a> | <a href="/login">Login</a> | <a href="/logout">Logout | <a href="/books">Books | <a href="/add">Add A Book</a> </span>
+        <!-- Display logged-in user in top right -->
+        {% if current_user.is_authenticated %}
+        <span class="float-left">Welcome, {{ current_user.username }}!</span>
+    {% endif %}
+</nav>
         {% block content %}
         {% endblock %}
     </div>
       <!-- Buttons for navigation -->
-      <div>
+      <!-- <div>
         <a href="{{ url_for('register') }}">
             <button>Go to Register</button>
         </a>
         <a href="{{ url_for('login') }}">
             <button>Go to Login</button>
         </a>
-        <!-- <a href="{{ url_for('secret') }}">
-            <button>Go to Secret</button>
-        </a> -->
-    </div>
+   
+    </div> -->
 </body>
+<br>
+<br>
+<br>
 </html>
