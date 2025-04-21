@@ -3,9 +3,9 @@
 {% block content %}
   <h1>Add a New Book</h1>
 
-  <form id="form" method="POST" action="{{ url_for('add_book') }}">
+  <form method="POST" action="{{ url_for('add_book') }}" enctype="multipart/form-data">
+    <!-- enctype="multipart/form-data" is necessary for file uploads -->
     {{ form.hidden_tag() }}
-
     <div>
       <label for="title">Book Title</label><br>
       {{ form.title(size=100) }}
@@ -14,13 +14,7 @@
       {% endfor %}
     </div>
 
-    <div>
-      <label for="genre">Genre</label><br>
-      {{ form.genre(size=30) }}
-      {% for error in form.genre.errors %}
-        <div class="error">{{ error }}</div>
-      {% endfor %}
-    </div>
+  
 
     <div>
       <label for="cover_url">Cover URL</label><br>
@@ -30,10 +24,25 @@
       {% endfor %}
     </div>
 
+    <div>
+      <label for="author">Author</label><br>
+      {{ form.author(size=40) }}
+      {% for error in form.author.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
+
+    <div>
+      <label for="genre">Genre</label><br>
+      {{ form.genre(size=40) }}
+      {% for error in form.genre.errors %}
+        <div class="error">{{ error }}</div>
+      {% endfor %}
+    </div>
 
 
     <div>
-      <label for="description">Description</label><br>
+      <label for="description">Summary</label><br>
       {{ form.description(rows=4, cols=40) }}
       {% for error in form.description.errors %}
         <div class="error">{{ error }}</div>
@@ -41,9 +50,19 @@
     </div>
 
     <div>
-      <button type="submit">Add Book</button>
+      <label for="file">Upload Book File (PDF/EPUB)</label><br>
+      {{ form.file(class="form-control", id="file") }}
+      {% for error in form.file.errors %}
+          <div class="error">{{ error }}</div>
+      {% endfor %}
+  </div>
+  <br>
+
+    <div>
+      <button type="submit">Upload Book File</button>
     </div>
   </form>
+  <br>
 
   <p><a href="{{ url_for('books_list') }}">Back to All Books</a></p>
 {% endblock %}
