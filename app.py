@@ -1,5 +1,6 @@
 from flask import Flask, render_template, redirect, session, request, flash, url_for, jsonify, send_from_directory
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
+from cryptography.fernet import Fernet
 import requests
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -16,6 +17,35 @@ from .models import User, Book, EbookLink, Session, db, connect_db
 login_manager = LoginManager() # This needs to be defined
 # Initialize the migration extension
 migrate = Migrate()
+
+# Generate a key for encryption
+key = Fernet.generate_key()
+fernet = Fernet(key)
+# Print the key for debugging purposes
+print(key)
+
+def encrypt_file(file_path):
+    with open(file_path, 'rb') as file:
+        file_data = file.read()
+    encrypted_data = fernet.encrypt(file_data)
+
+    encrypted_file_path = file_path + '.enc' #Saving encrypted file with a different extension .enc
+    with open(encrypted_file_path, 'wb') as encrypted_file:
+        encrypted_file.write(encrypted_data)
+
+    return encrypted_file_path
+
+def decrypt_file(encrypted_file_path):
+    with open(encrypted_file_path, 'rb') as file:
+        encrypted_data = file.read()
+    decrypted_data = fernet.decrypt(encrypted_data)
+    
+    decrypted_file_path = encrypted_file_path.replace(".enc", "")  # Remove the .enc extension
+    with open(decrypted_file_path, 'wb') as decrypted_file:
+        decrypted_file.write(decrypted_data)
+    
+    return decrypted_file_path
+         
 
 def create_app():
     app = Flask(__name__)
@@ -244,8 +274,8 @@ def books_list():
     uploaded_books = Book.query.all()  # Get all books from the local database (uploaded books)
     ebooks_data = get_ebook_links(books_data) #Fetch the ebook data from the API
 
-    print("Books Data:", books_data)  # Check the entire books data
-    print("Ebook Links:", ebooks_data)
+    # print("Books Data:", books_data)  # Check the entire books data
+    # print("Ebook Links:", ebooks_data)
     
     if books_data and 'results' in books_data:
         # Render the template with both books and ebooks_data (EPUB links)
@@ -299,6 +329,9 @@ def add_book():
             filename = secure_filename(file.filename)
             file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             file.save(file_path)
+
+            # Encryption and saving the file
+            encrypted_file_path = encrypt_file(file_path)
             print(f"File saved to: {file_path}")
 
             # Determine file type
@@ -313,6 +346,8 @@ def add_book():
                 flash('Invalid file type. Only PDF and EPUB files are allowed.')
                 return redirect(url_for('add_book'))
 
+            
+
             # Create a new book instance
             new_book = Book(
                 title=title,
@@ -320,7 +355,7 @@ def add_book():
                 cover_url=cover_url,
                 genre=genre,
                 description=description,
-                file_path=file_path,
+                file_path=encrypted_file_path,
                 file_type=file_type, 
                 user_id=current_user.id,
             )
