@@ -11,9 +11,25 @@
     {{ form.hidden_tag() }}
 
     <p>
+      {{ form.title.label }}<br>
+      {{ form.title(size=100) }}
+    </p>
+    <p>
+      {{ form.author.label }}<br>
+      {{ form.author(size=40) }}
+      </p>
+
+      <p>
+      {{ form.genre.label }}<br>
+      {{ form.genre(size=40) }}
+      </p>
+
+
+    <p>
       {{ form.cover_url.label }}<br>
       {{ form.cover_url(size=40) }}
     </p>
+
 
     <p>
       {{ form.description.label }}<br>
@@ -21,7 +37,7 @@
     </p>
 
     <p>
-      {{ form.available() }} {{ form.available.label }}
+
     </p>
 
     <button type="submit">Update Book Info</button>

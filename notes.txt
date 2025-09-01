@@ -1,0 +1,8 @@
+
+
+
+
+Aws S3 bucket
+API key
+
+Cloudinary

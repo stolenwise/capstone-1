@@ -1,4 +1,4 @@
-from flask import Flask, render_template, redirect, session, request, flash, url_for, jsonify, send_from_directory
+from flask import Flask, render_template, redirect, session, request, flash, url_for, jsonify, send_from_directory, send_file
 from flask_login import LoginManager, UserMixin, login_user, login_required, logout_user, current_user
 from cryptography.fernet import Fernet
 import requests
@@ -19,7 +19,19 @@ login_manager = LoginManager() # This needs to be defined
 migrate = Migrate()
 
 # Generate a key for encryption
-key = Fernet.generate_key()
+KEY_FILE = 'encryption_key.key'
+
+def get_or_create_key():
+    if os.path.exists(KEY_FILE):
+        with open(KEY_FILE, 'rb') as key_file:
+            key = key_file.read()
+    else:
+        key = Fernet.generate_key()
+        with open(KEY_FILE, 'wb') as key_file:
+            key_file.write(key)
+    return key
+
+key = get_or_create_key()
 fernet = Fernet(key)
 # Print the key for debugging purposes
 print(key)
@@ -389,10 +401,56 @@ def add_book():
     
     return render_template('add_book.html', form=form)
 
+
 @app.route('/uploads/<filename>')
 @login_required 
 def upload_file(filename):
     return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/download/<int:book_id>')
+@login_required
+def download_book(book_id):
+    book = Book.query.get_or_404(book_id)
+    
+    if not book.file_path:
+        flash('No file available for this book', 'error')
+        return redirect(url_for('books_list'))
+
+    encrypted_file_path = os.path.join(app.config['UPLOAD_FOLDER'], 
+                                     os.path.basename(book.file_path))
+    
+    if not os.path.exists(encrypted_file_path):
+        flash('File not found on server', 'error')
+        return redirect(url_for('books_list'))
+
+    try:
+        # Decrypt the file
+        decrypted_file_path = decrypt_file(encrypted_file_path)
+        
+        # Get the original filename without .enc
+        original_filename = os.path.basename(book.file_path).replace('.enc', '')
+        
+        # Send the decrypted file
+        response = send_file(
+            decrypted_file_path,
+            as_attachment=True,
+            download_name=original_filename
+        )
+        
+        # Clean up the decrypted file after sending
+        @response.call_on_close
+        def cleanup():
+            try:
+                os.remove(decrypted_file_path)
+            except Exception as e:
+                app.logger.error(f"Error cleaning up decrypted file: {e}")
+        
+        return response
+        
+    except Exception as e:
+        flash('Failed to decrypt file. Please contact support.', 'error')
+        app.logger.error(f"Decryption failed for book {book_id}: {str(e)}")
+        return redirect(url_for('books_list'))
 
 
 @app.route('/books/<int:book_id>', methods=['GET', 'POST'])

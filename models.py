@@ -17,8 +17,12 @@ class User(db.Model, UserMixin):
         return str(self.id)  # Return the ID as a string (Flask-Login needs it as a string)
 
     feedback = db.relationship('Feedback', backref='user', lazy=True)
+    # Example of proper foreign key
+    # user_id = db.Column(db.Integer, db.ForeignKey('users.id', name='fk_comments_user_id'))
 
-    
+    def get_id(self):
+        return str(self.id)
+
     def __repr__(self):
         return f"<User {self.username}>"
 

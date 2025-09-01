@@ -47,7 +47,7 @@
                     <p>Author: {{ book.author }}</p>
                     <p>{{ book.description }}</p>
                     <!-- This will create a link to the file directly -->
-                    <a href="{{ book.file_path }}" target="_blank" download>Download Book</a> | 
+                    <a href="{{ url_for('download_book', book_id=book.id) }}" target="_blank" download>Download Book</a> | 
                     <a href="{{ url_for('edit_book', book_id=book.id) }}">Edit Book Entry</a>
                 </li>
                 {% endfor %}

@@ -36,7 +36,7 @@ class AddBookForm(FlaskForm):
                            ('Romance', 'Romance'),
                            ('Biography', 'Biography')
                        ],
-                       validators=[InputRequired()])
+                       validators=[InputRequired(), ])
     
     cover_url = StringField(
         "Cover URL",
@@ -52,6 +52,24 @@ class AddBookForm(FlaskForm):
 
 
 class EditBookForm(FlaskForm):
+    title = StringField("Title", validators=[Optional()])
+    author = StringField("Author", validators=[Optional()])
+    genre = SelectField("Genre", 
+                       choices=[
+                           ('', '-- Select a Genre --'),  # Empty default option
+                           ('Fiction', 'Fiction'),
+                           ('Non-Fiction', 'Non-Fiction'),
+                           ('Religious', 'Religious'),
+                           ('Philosophy', 'Philosophy'),
+                           ('History', 'History'),
+                           ('Psychology', 'Psychology'),
+                           ('Science Fiction', 'Science Fiction'),
+                           ('Fantasy', 'Fantasy'),
+                           ('Mystery', 'Mystery'),
+                           ('Romance', 'Romance'),
+                           ('Biography', 'Biography')
+                       ],
+                       validators=[Optional()])
     cover_url = StringField("Cover URL", validators=[Optional(), URL()])
     description = TextAreaField("Notes", validators=[Optional()])
     available = BooleanField("Available?")
