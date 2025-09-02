@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <!-- Hero Section -->
+            <div class="jumbotron bg-light p-5 rounded">
+                <h1 class="display-4">📚 The Gnarly Book Garden 🌺</h1>
+                <p class="lead">Your locally preserved digital library</p>
+                <hr class="my-4">
+                
+                {% if current_user.is_authenticated %}
+                    <!-- Content for logged-in users -->
+                    <p>Welcome back, <strong>{{ current_user.username }}</strong>!</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('books') }}" class="btn btn-primary btn-lg mr-3">
+                            <i class="fas fa-book"></i> Browse Books
+                        </a>
+                        <a href="{{ url_for('add_book') }}" class="btn btn-success btn-lg">
+                            <i class="fas fa-plus"></i> Add a Book
+                        </a>
+                    </div>
+                {% else %}
+                    <!-- Content for logged-out users -->
+                    <p>Discover, share, and manage your book collection.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('login') }}" class="btn btn-primary btn-lg mr-3">
+                            <i class="fas fa-sign-in-alt"></i> Login
+                        </a>
+                        <a href="{{ url_for('register') }}" class="btn btn-outline-primary btn-lg">
+                            <i class="fas fa-user-plus"></i> Sign Up
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Features Section -->
+            <div class="row mt-5">
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-book-open fa-3x text-primary mb-3"></i>
+                            <h5>Browse Books</h5>
+                            <p>Explore our collection of books from various genres and authors.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-plus-circle fa-3x text-success mb-3"></i>
+                            <h5>Add Books</h5>
+                            <p>Contribute to our growing library by adding your favorite books.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body text-center">
+                            <i class="fas fa-download fa-3x text-info mb-3"></i>
+                            <h5>Download</h5>
+                            <p>Access eBooks in various formats for your reading pleasure.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Books (for logged-in users) -->
+            {% if current_user.is_authenticated and user_books %}
+            <div class="mt-5">
+                <h3>Your Recent Books</h3>
+                <div class="list-group mt-3">
+                    {% for book in user_books[:5] %}  <!-- Show only 5 most recent -->
+                    <div class="list-group-item">
+                        <h6 class="mb-1">{{ book.title }}</h6>
+                        <p class="mb-1 text-muted">by {{ book.author }}</p>
+                        {% if book.genre %}
+                        <span class="badge bg-secondary">{{ book.genre }}</span>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% if user_books|length > 5 %}
+                <a href="{{ url_for('books_list') }}" class="btn btn-outline-primary btn-sm mt-3">
+                    View All Books
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

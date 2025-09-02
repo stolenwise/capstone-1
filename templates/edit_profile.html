@@ -1,0 +1,82 @@
+<!-- templates/edit_profile.html -->
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="mb-0">Edit Your Profile</h2>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {{ form.hidden_tag() }}
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                {{ form.username.label(class="form-label") }}
+                                {{ form.username(class="form-control") }}
+                                {% for error in form.username.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                {{ form.email.label(class="form-label") }}
+                                {{ form.email(class="form-control") }}
+                                {% for error in form.email.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <hr>
+                        <h5>Change Password</h5>
+                        <p class="text-muted small">Leave password fields blank if you don't want to change your password.</p>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                {{ form.password.label(class="form-label") }}
+                                {{ form.password(class="form-control", placeholder="Enter new password") }}
+                                {% for error in form.password.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="form-group">
+                                {{ form.confirm_password.label(class="form-label") }}
+                                {{ form.confirm_password(class="form-control", placeholder="Confirm new password") }}
+                                {% for error in form.confirm_password.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <hr>
+                        <div class="mb-3">
+                            <div class="form-group">
+                                {{ form.current_password.label(class="form-label") }}
+                                {{ form.current_password(class="form-control", placeholder="Enter your current password to confirm changes") }}
+                                {% for error in form.current_password.errors %}
+                                    <span class="text-danger">{{ error }}</span>
+                                {% endfor %}
+                                <small class="form-text text-muted">We need your current password to confirm your identity.</small>
+                            </div>
+                        </div>
+
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">Update Profile</button>
+                            <a href="{{ url_for('user_profile', username=user.username) }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

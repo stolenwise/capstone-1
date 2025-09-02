@@ -4,13 +4,21 @@ from wtforms.validators import Optional, InputRequired, URL, DataRequired, Email
 from flask_wtf.file import FileAllowed, FileRequired
 from flask_wtf import FlaskForm
 from wtforms import StringField, IntegerField, TextAreaField, SelectField
-from wtforms.validators import InputRequired, Optional, AnyOf, URL, NumberRange
+from wtforms.validators import InputRequired, Optional, AnyOf, URL, NumberRange, DataRequired, Email, Optional, EqualTo
 
 class UserForm(FlaskForm):
     username = StringField('Username', validators=[DataRequired()])
     password = PasswordField('Password', validators=[DataRequired()])
     email = StringField('Email', validators=[DataRequired(), Email()]) 
     submit = SubmitField('Register')
+
+class EditProfileForm(FlaskForm):
+    username = StringField('Username', validators=[DataRequired()])
+    email = StringField('Email', validators=[DataRequired(), Email()])
+    password = PasswordField('New Password', validators=[Optional()])
+    confirm_password = PasswordField('Confirm New Password', validators=[Optional(), EqualTo('password', message='Passwords must match')])
+    current_password = PasswordField('Current Password', validators=[DataRequired()])
+    submit = SubmitField('Update Profile')
 
 
 class LoginForm(FlaskForm):

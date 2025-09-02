@@ -5,9 +5,10 @@ import requests
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from werkzeug.security import generate_password_hash, check_password_hash
+from wtforms.validators import EqualTo, Optional 
 from werkzeug.utils import secure_filename
 import os
-from .forms import UserForm, LoginForm, AddBookForm, EditBookForm
+from .forms import UserForm, LoginForm, AddBookForm, EditBookForm, EditProfileForm
 from flask_session import Session
 from flask_wtf.csrf import generate_csrf
 from datetime import timedelta
@@ -140,15 +141,32 @@ ebook_links = get_ebook_links(books)
 for ebook in ebook_links:
     print(f"Title: {ebook['title']} | EPUB Link: {ebook['epub_link']}")
 
-# HOME PAGE?
+# HOME PAGE
+
+
+@app.route('/home')
+def home():
+    """Home landing page"""
+    if current_user.is_authenticated:
+        # Get user's books for the recent books section
+        user_books = current_user.books
+    else:
+        user_books = []
+    
+    return render_template('home.html', user_books=user_books)
+
+@app.route('/')
+def index():
+    """Redirect root URL to home page"""
+    return redirect('/home') 
+
+
 
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
 
-@app.route('/')
-def home():
-    return redirect('/login')
+
 
 # LOGIN ROUTES
 
@@ -232,24 +250,49 @@ def logout():
     return redirect('/login') 
 
 @app.route('/users/<username>')
+@login_required
 def user_profile(username):
-    # Check if user is logged in
-    if 'user_id' not in session:
-        return redirect('/login')
+    user = User.query.filter_by(username=username).first_or_404()
+    return render_template('user_profile.html', user=user)
 
-    # Get the current logged-in user's details
-    user = User.query.filter_by(id=session['user_id']).first()
-
-    # Check if the logged-in user matches the username from the URL
-    if user.username != username:
-        return redirect('/login')
-
-    # Query the feedback from the current user by user_id (NOT by username)
-    feedback_list = Feedback.query.filter_by(user_id=user.id).all()
-
-    return render_template('user_profile.html', user=user, feedback_list=feedback_list)
-
-
+@app.route('/users/<username>/edit', methods=['GET', 'POST'])
+@login_required
+def edit_profile(username):
+    # Ensure the logged-in user is editing their own profile
+    if current_user.username != username:
+        flash("You can only edit your own profile.", "danger")
+        return redirect(url_for('user_profile', username=current_user.username))
+    
+    form = EditProfileForm()
+    
+    if form.validate_on_submit():
+        try:
+            # Verify current password first
+            if not check_password_hash(current_user.password, form.current_password.data):
+                flash("Current password is incorrect.", "danger")
+                return render_template('edit_profile.html', form=form, user=current_user)
+            
+            # Update user data
+            current_user.username = form.username.data
+            current_user.email = form.email.data
+            
+            # Update password if provided
+            if form.password.data:
+                current_user.password = generate_password_hash(form.password.data)
+                flash("Password updated successfully!", "success")
+            
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+            return redirect(url_for('user_profile', username=current_user.username))
+        except Exception as e:
+            db.session.rollback()
+            flash("An error occurred while updating your profile.", "danger")
+    
+    # Pre-populate the form with current user data (except passwords)
+    form.username.data = current_user.username
+    form.email.data = current_user.email
+    
+    return render_template('edit_profile.html', form=form, user=current_user)
     
 @app.route('/users/<username>/delete', methods=['POST'])
 def delete_user(username):
