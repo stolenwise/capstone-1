@@ -163,6 +163,24 @@ def api_ebook_links():
     ebook_links = get_ebook_links(books)
     return jsonify(ebook_links)
 
+@app.route('/debug')
+def debug():
+    import os
+    template_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'templates')
+    template_files = []
+    if os.path.exists(template_path):
+        template_files = os.listdir(template_path)
+    
+    return f"""
+    <h1>Debug Info</h1>
+    <p>App is running!</p>
+    <p>Current working directory: {os.getcwd()}</p>
+    <p>Template path: {template_path}</p>
+    <p>Template exists: {os.path.exists(template_path)}</p>
+    <p>Template files: {template_files}</p>
+    <p>All routes: {[rule.rule for rule in app.url_map.iter_rules()]}</p>
+    """
+
 @app.route('/debug/ebooks')
 def debug_ebooks():
     books = fetch_books_from_api()
