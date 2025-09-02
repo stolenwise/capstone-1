@@ -59,22 +59,22 @@ def decrypt_file(encrypted_file_path):
     
     return decrypted_file_path
 
-# REPLACE YOUR EXISTING create_app FUNCTION WITH THIS:
-def create_app(test_config=None):
-    app = Flask(__name__)
 
+def create_app(test_config=None):
+    app = Flask(__name__, template_folder='templates', static_folder='static')
+    
     # Default configuration
     app.config.from_mapping(
-        SQLALCHEMY_DATABASE_URI='sqlite:///books.db',
+        SQLALCHEMY_DATABASE_URI=os.environ.get('DATABASE_URL', 'sqlite:///books.db').replace('postgres://', 'postgresql://'),
         SQLALCHEMY_TRACK_MODIFICATIONS=False,
-        SECRET_KEY='supersecretkey',
+        SECRET_KEY=os.environ.get('SECRET_KEY', 'dev-secret-key'),
         SESSION_TYPE="filesystem",
-        SESSION_PERMANENT=True,
-        UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads'),
-        MAX_CONTENT_LENGTH=500 * 1024 * 1024,  # 500MB limit
+        UPLOAD_FOLDER=os.environ.get('UPLOAD_FOLDER', 'uploads'),
+        MAX_CONTENT_LENGTH=500 * 1024 * 1024,
         WTF_CSRF_ENABLED=True,
         TESTING=False
     )
+    
     
     # Override with test config if provided
     if test_config:
@@ -189,19 +189,25 @@ def debug_ebooks():
         print(ebook['title'])  # This is now inside a function
     return "Check console for output"
 
+@app.route('/static-test')
+def static_test():
+    return app.send_static_file('style.css') if hasattr(app, 'static_folder') else "No static folder"
+
 # HOME PAGE
 
 
 @app.route('/home')
 def home():
     """Home landing page"""
-    if current_user.is_authenticated:
-        # Get user's books for the recent books section
-        user_books = current_user.books
-    else:
-        user_books = []
-    
-    return render_template('home.html', user_books=user_books)
+    try:
+        if current_user.is_authenticated:
+            user_books = current_user.books
+        else:
+            user_books = []
+        
+        return render_template('home.html', user_books=user_books)
+    except Exception as e:
+        return f"Error: {str(e)}", 500
 
 @app.route('/')
 def index():
