@@ -8,12 +8,12 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from wtforms.validators import EqualTo, Optional 
 from werkzeug.utils import secure_filename
 import os
-from .forms import UserForm, LoginForm, AddBookForm, EditBookForm, EditProfileForm
+from forms import UserForm, LoginForm, AddBookForm, EditBookForm, EditProfileForm
 from flask_session import Session
 from flask_wtf.csrf import generate_csrf
 from datetime import timedelta
-from .db import db  # Import db from the db.py file
-from .models import User, Book, EbookLink, Session, db, connect_db 
+from db import db  # Import db from the db.py file
+from models import User, Book, EbookLink, Session, db, connect_db 
 
 login_manager = LoginManager() # This needs to be defined
 # Initialize the migration extension
@@ -58,40 +58,55 @@ def decrypt_file(encrypted_file_path):
         decrypted_file.write(decrypted_data)
     
     return decrypted_file_path
-         
 
-def create_app():
+# REPLACE YOUR EXISTING create_app FUNCTION WITH THIS:
+def create_app(test_config=None):
     app = Flask(__name__)
 
- 
-    login_manager.init_app(app)
-    login_manager.login_view = 'login'# Redirect to login page if user is not logged in
+    # Default configuration
+    app.config.from_mapping(
+        SQLALCHEMY_DATABASE_URI='sqlite:///books.db',
+        SQLALCHEMY_TRACK_MODIFICATIONS=False,
+        SECRET_KEY='supersecretkey',
+        SESSION_TYPE="filesystem",
+        SESSION_PERMANENT=True,
+        UPLOAD_FOLDER=os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads'),
+        MAX_CONTENT_LENGTH=500 * 1024 * 1024,  # 500MB limit
+        WTF_CSRF_ENABLED=True,
+        TESTING=False
+    )
     
-    # Flask app configuration
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///books.db'
-    app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    app.secret_key = 'supersecretkey'
-    app.config["SESSION_TYPE"] = "filesystem"  # Store sessions in a file
-    app.config["SESSION_PERMANENT"] = True
-    basedir = os.path.abspath(os.path.dirname(__file__))
-    app.config['UPLOAD_FOLDER'] = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-    # Create the folder if it doesn't exist
+    # Override with test config if provided
+    if test_config:
+        app.config.update(test_config)
+    else:
+        # Load production config if it exists
+        app.config.from_pyfile('config.py', silent=True)
+    
+    # Ensure upload folder exists
     os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-    app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 16MB limit
-    # Session(app)
-    app.permanent_session_lifetime = timedelta(days=1)  # Sessions will last 1 day.
+    app.permanent_session_lifetime = timedelta(days=1)
     
-    # Initialize the database and migration extensions with the app
-    db.init_app(app)  # Initialize db with app
+    # Initialize extensions
+    login_manager.init_app(app)
+    login_manager.login_view = 'login'
+    db.init_app(app)
     migrate.init_app(app, db)
-
-    # Create the tables if they don't exist yet
+    
+    # # Import and register blueprints (adjust based on your actual structure)
+    # from .routes import main_bp, auth_bp  # Adjust these imports based on your actual structure
+    
+    # app.register_blueprint(main_bp)
+    # app.register_blueprint(auth_bp)
+    
+    # Create tables if they don't exist
     with app.app_context():
         db.create_all()
-
+    
     return app
 
-app = create_app() 
+# Create the application instance
+app = create_app()
 
 #ALLOWED EXTENSIONS
 
@@ -115,7 +130,13 @@ def fetch_books_from_api():
         return response.json()
     else:
         return None
-books = fetch_books_from_api()
+
+
+@app.route('/api/books')
+def api_books():
+    books = fetch_books_from_api()
+    return jsonify(books)
+
 
 def get_ebook_links(books):
     ebook_links = []
@@ -136,10 +157,19 @@ def get_ebook_links(books):
 
     return ebook_links
 
-ebook_links = get_ebook_links(books)
+@app.route('/api/ebook-links')  
+def api_ebook_links():
+    books = fetch_books_from_api()
+    ebook_links = get_ebook_links(books)
+    return jsonify(ebook_links)
 
-for ebook in ebook_links:
-    print(f"Title: {ebook['title']} | EPUB Link: {ebook['epub_link']}")
+@app.route('/debug/ebooks')
+def debug_ebooks():
+    books = fetch_books_from_api()
+    ebook_links = get_ebook_links(books)
+    for ebook in ebook_links:
+        print(ebook['title'])  # This is now inside a function
+    return "Check console for output"
 
 # HOME PAGE
 

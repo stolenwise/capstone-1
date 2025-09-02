@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from flask_login import UserMixin
-from .db import db
+from db import db
 
 
 # Define classes for User, Book, and Session
