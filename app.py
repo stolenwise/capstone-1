@@ -224,69 +224,52 @@ def load_user(user_id):
 
 # LOGIN ROUTES
 
-@app.route('/register', methods=['GET'])
+@app.route('/register', methods=['GET', 'POST'])
 def register():
-    form = UserForm() #Create the instance for the UserForm
+    form = UserForm()
+    
+    if request.method == 'POST':
+        if form.validate_on_submit():
+            try:
+                hashed_password = generate_password_hash(form.password.data)
+                new_user = User(
+                    username=form.username.data,
+                    password=hashed_password,
+                    email=form.email.data,
+                )
+                db.session.add(new_user)
+                db.session.commit()
+                flash('Registration successful! Please log in.')
+                return redirect(url_for('login'))
+            except Exception as e:
+                db.session.rollback()
+                flash('Error creating account. Please try again.')
+                print(f"Registration error: {str(e)}")
+        else:
+            print(f"Form errors: {form.errors}")
+    
     return render_template("register_form.html", form=form)
-
-@app.route('/register', methods=['POST'])
-def process_register():
-    form = UserForm(request.form)
-    if form.validate_on_submit():
-        print("Form validated successfully!")
-        hashed_password = generate_password_hash(form.password.data)  # This hashes the password
-
-        new_user = User(
-            username=form.username.data,
-            password=hashed_password,  # Save the hashed password
-            email=form.email.data,
-        )
-
-        db.session.add(new_user)
-        db.session.commit()
-        print("User created successfully!")
-
-        return redirect("/login")
-    else:
-        print(f"Form errors: {form.errors}")  # Print form validation errors for debugging
-        return render_template("register_form.html", form=form)
-
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+    
     if form.validate_on_submit():
         user = User.query.filter_by(username=form.username.data).first()
+        
         if user and check_password_hash(user.password, form.password.data):
-            login_user(user, remember=True)  # This ensures the user is logged in and stays logged in
-            return redirect(url_for('books_list'))  # Redirect to the books list page after login
+            login_user(user, remember=form.remember.data if hasattr(form, 'remember') else True)
+            flash('Logged in successfully!')
+            
+            # Set session as permanent
+            session.permanent = True
+            
+            # Redirect to next page if it exists, otherwise to books_list
+            next_page = request.args.get('next')
+            return redirect(next_page or url_for('books_list'))
         else:
             flash('Invalid username or password')
+    
     return render_template('login_form.html', form=form)
-
-@app.route('/login', methods=['POST'])
-def process_login():
-    form = LoginForm()
-    print(f"Entered username: {form.username.data}")
-    print(f"Entered password: {form.password.data}")
-
-    if form.validate_on_submit():
-        # Make sure the current app is the one initialized with the db instance
-        user = User.query.filter_by(username=form.username.data).first()
-
-        if user and check_password_hash(user.password, form.password.data):
-            print(f"Stored hash: {user.password}") 
-            session.permanent = True
-            session['user_id'] = user.id  # Store user_id in session after login
-            session['username'] = user.username
-            print(f"User {user.username} logged in successfully.")
-            return redirect(url_for('books_list', username=user.username))  # Redirect to user page after login
-        else:
-            print("Invalid username or password")
-            return redirect("/login")  # Redirect back to login if invalid credentials
-    else:
-        print("Form validation failed")
-        return render_template("login_form.html", form=form)  # Render login form if not submitted
-
 
 @app.route('/secret', methods=['GET'])
 def secret():
